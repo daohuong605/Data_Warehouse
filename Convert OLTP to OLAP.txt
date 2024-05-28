@@ -1,0 +1,52 @@
+-- Create DimDate
+CREATE TABLE `datawarehouse-418306.FINAL.DimDate` AS
+SELECT 
+  ROW_NUMBER() OVER() AS Date_ID,
+  DATE(Date) AS date,
+  FORMAT_DATE('%A', Date) AS day_name,
+  EXTRACT(MONTH FROM Date) AS month,
+  FORMAT_DATE('%B', DATE_TRUNC(Date, MONTH)) AS month_name,
+  EXTRACT(QUARTER FROM Date) AS quarter,
+  CONCAT('Q', CAST(EXTRACT(QUARTER FROM Date) AS STRING)) AS quarter_name,
+  EXTRACT(YEAR FROM Date) AS year,
+  CAST(EXTRACT(YEAR FROM Date) AS STRING) AS year_name
+FROM `datawarehouse-418306.FINAL.Sale`;
+
+
+
+-- Create DimCustomer
+CREATE OR REPLACE TABLE `datawarehouse-418306.FINAL.DimCUSTOMER` AS
+SELECT * FROM `datawarehouse-418306.FINAL.Customer`;
+
+
+-- Create DimPromotion
+CREATE OR REPLACE TABLE `datawarehouse-418306.FINAL.DimPROMOTION` AS
+  SELECT * FROM `datawarehouse-418306.FINAL.Promotion`
+
+--Create DimProductLine
+CREATE OR REPLACE TABLE `datawarehouse-418306.FINAL.DimPROMOTION` AS
+  SELECT * FROM `datawarehouse-418306.FINAL.Promotion`
+
+
+-- Create Fact_Sale
+CREATE OR REPLACE TABLE `datawarehouse-418306.FINAL.Fact_Sale` AS
+SELECT 
+    s.Sale_ID,
+    s.Customer_ID,
+    sd.product_line_id AS ProductLine_ID,
+    d.ID As Date_ID,
+    s.Promotion_ID, 
+    sd.Quantity,
+    sd.Unit_Price,
+    s.Total,
+    s.payment AS Payment
+FROM 
+    `datawarehouse-418306.FINAL.Sale` AS s
+JOIN 
+    `datawarehouse-418306.FINAL.Sale_Detail` AS sd
+ON 
+    s.Sale_ID = sd.sale_id
+JOIN 
+    `datawarehouse-418306.FINAL.Date` AS d 
+ON 
+    s.date = d.Date;
